@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platform Ujian Robotika - SMPN 1 Surabaya</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; }
+        .container { background-color: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 800px; }
+        h2, h3 { text-align: center; color: #1a73e8; margin-top: 0; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 20px; font-size: 14px; }
+        .btn { background-color: #1a73e8; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; margin-top: 10px; transition: 0.3s; }
+        .btn:hover { background-color: #1557b0; }
+        .btn-outline { background-color: transparent; color: #1a73e8; border: 2px solid #1a73e8; }
+        .btn-outline:hover { background-color: #e8f0fe; }
+        .btn-danger { background-color: #d93025; }
+        .btn-danger:hover { background-color: #b32a20; }
+        .btn-warning { background-color: #fbbc05; color: #333; }
+        .btn-warning:hover { background-color: #e0a800; }
+        .btn-success { background-color: #28a745; }
+        .btn-success:hover { background-color: #218838; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; width: auto; margin: 0; display: inline-block; }
+        .hidden { display: none !important; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        input[type="text"], input[type="password"], input[type="number"], select, textarea, input[type="file"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-family: inherit; }
+        input[type="file"] { background: #fff; cursor: pointer; }
+        .box-soal, .folder-card { border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin-bottom: 15px; background: #fafafa; }
+        .folder-card { border-left: 5px solid #1a73e8; display: flex; justify-content: space-between; align-items: center; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 3px; font-size: 12px; font-weight: bold; color: white; background: #28a745; margin-bottom: 10px; }
+        .badge-status { background: #6c757d; }
+        .badge-status.aktif { background: #28a745; }
+        .badge-status.tutup { background: #d93025; }
+        .options { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .option-label { background-color: #f8f9fa; padding: 10px; border: 1px solid #dee2e6; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .list-item { border-bottom: 1px solid #ddd; padding: 10px 0; font-size: 14px; }
+        .list-item:last-child { border-bottom: none; }
+        .action-buttons { margin-top: 8px; display: flex; gap: 5px; }
+        img.soal-img { max-width: 100%; max-height: 300px; border-radius: 5px; margin: 10px 0; border: 1px solid #ccc; display: block; }
+        .progress-container { width: 100%; background-color: #e0e0e0; border-radius: 4px; margin-bottom: 20px; overflow: hidden; height: 12px; }
+        .progress-bar { height: 100%; background-color: #1a73e8; width: 0%; transition: width 0.4s ease; }
+        .warning-box { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px; margin-bottom: 20px; display: none; font-weight: bold; text-align: center;}
+    </style>
+</head>
+<body>
+
+<div class="container" id="main-container">
+    
+    <div id="role-screen">
+        <h2>Platform Ujian Ekstrakurikuler</h2>
+        <div class="subtitle">Robotika SMPN 1 Surabaya</div>
+        <hr style="margin-bottom: 20px; border:0; border-top:1px solid #eee;">
+        <p style="text-align: center; margin-bottom: 20px;">Silakan pilih portal masuk Anda:</p>
+        <button class="btn" onclick="showScreen('login-guru-screen')">Masuk sebagai Guru (Pembuat Soal)</button>
+        <button class="btn btn-outline" onclick="showScreen('login-siswa-screen')">Masuk sebagai Siswa (Kerjakan Soal)</button>
+    </div>
+
+    <div id="login-guru-screen" class="hidden">
+        <h2>Portal Guru</h2>
+        <div class="form-group">
+            <label>PIN Akses Guru:</label>
+            <input type="password" id="guru-pin" placeholder="Masukkan PIN (Default: 1234)">
+        </div>
+        <button class="btn" onclick="loginGuru()">Masuk Panel Guru</button>
+        <button class="btn btn-outline" onclick="showScreen('role-screen')">Kembali</button>
+    </div>
+
+    <div id="folder-guru-screen" class="hidden">
+        <h2>Daftar Folder Ujian</h2>
+        <div style="text-align: right; margin-bottom: 15px;">
+            <button class="btn btn-danger btn-sm" onclick="resetSemuaFolder()">Hapus Semua Data</button>
+        </div>
+
+        <div class="box-soal" style="background: #e8f0fe; border-color: #1a73e8;">
+            <h3 style="margin-top:0; color:#1a73e8; font-size: 16px; text-align: left;">Buat Folder Ujian Baru</h3>
+            <div class="form-group"><label>Nama Mata Pelajaran / Ujian:</label><input type="text" id="input-folder-nama" placeholder="Contoh: Ujian Tengah Semester"></div>
+            <div class="form-group"><label>Token Ujian (Kode Akses Siswa):</label><input type="text" id="input-folder-token" placeholder="Contoh: ROBOT2026"></div>
+            
+            <div style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex: 1;"><label>Durasi (Menit):</label><input type="number" id="input-folder-durasi" value="60"></div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Status Akses:</label>
+                    <select id="input-folder-status">
+                        <option value="aktif">Aktif (Terbuka)</option>
+                        <option value="tutup">Ditutup (Dikunci)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button class="btn" onclick="buatFolderBaru()">Buat Folder</button>
+        </div>
+
+        <h3 style="text-align: left; margin-top: 25px; border-bottom: 2px solid #ccc; padding-bottom: 5px;">Folder Tersedia:</h3>
+        <div id="list-folder-container"></div>
+
+        <button class="btn btn-outline" onclick="showScreen('role-screen')" style="margin-top: 20px;">Keluar Panel Guru</button>
+    </div>
+
+    <div id="editor-soal-screen" class="hidden">
+        <h2 id="judul-folder-aktif">Nama Ujian</h2>
+        <div class="subtitle">Token Akses: <strong id="token-folder-aktif" style="color:#d93025;">-</strong></div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background:#f8f9fa; padding:10px; border-radius:5px; border:1px solid #ddd;">
+            <span style="font-weight: bold; color: #1a73e8;">Total PG: <span id="count-pg">0</span> | Uraian: <span id="count-uraian">0</span></span>
+            <button class="btn btn-outline btn-sm" onclick="kembaliKeFolder()">Kembali</button>
+        </div>
+        
+        <div class="box-soal">
+            <h3 style="margin-top:0; color:#333; font-size: 16px; text-align: left; border-bottom: 2px solid #1a73e8; padding-bottom: 5px;">Manajemen Soal Pilihan Ganda</h3>
+            
+            <div class="form-group">
+                <label>Pilih Gambar Soal (Opsional, Otomatis Kompres < 250kb):</label>
+                <input type="file" id="input-file-pg" accept="image/*" onchange="prosesGambar(this, 'preview-pg', 'data-img-pg')">
+                <input type="hidden" id="data-img-pg">
+                <img id="preview-pg" class="soal-img hidden">
+            </div>
+
+            <div class="form-group"><label>Pertanyaan:</label><textarea id="input-q-pg" rows="2"></textarea></div>
+            <div class="form-group"><label>Opsi A:</label><input type="text" id="input-opt-0"></div>
+            <div class="form-group"><label>Opsi B:</label><input type="text" id="input-opt-1"></div>
+            <div class="form-group"><label>Opsi C:</label><input type="text" id="input-opt-2"></div>
+            <div class="form-group"><label>Opsi D:</label><input type="text" id="input-opt-3"></div>
+            <div class="form-group">
+                <label>Kunci Jawaban Benar:</label>
+                <select id="input-ans-pg">
+                    <option value="0">Opsi A</option>
+                    <option value="1">Opsi B</option>
+                    <option value="2">Opsi C</option>
+                    <option value="3">Opsi D</option>
+                </select>
+            </div>
+            <button id="btn-simpan-pg" class="btn btn-success" onclick="simpanSoalPG()">+ Tambah Soal PG</button>
+            <button id="btn-batal-pg" class="btn btn-danger hidden" onclick="batalEditPG()">Batal Edit</button>
+
+            <div style="margin-top: 20px; background: #fff; padding: 10px; border-radius: 5px; border: 1px dashed #ccc;">
+                <strong>Daftar Soal PG:</strong>
+                <div id="list-pg-container" style="max-height: 250px; overflow-y: auto; margin-top: 10px;"></div>
+            </div>
+        </div>
+
+        <div class="box-soal">
+            <h3 style="margin-top:0; color:#333; font-size: 16px; text-align: left; border-bottom: 2px solid #fbbc05; padding-bottom: 5px;">Manajemen Soal Uraian</h3>
+            
+            <div class="form-group">
+                <label>Pilih Gambar Soal (Opsional, Otomatis Kompres < 250kb):</label>
+                <input type="file" id="input-file-uraian" accept="image/*" onchange="prosesGambar(this, 'preview-uraian', 'data-img-uraian')">
+                <input type="hidden" id="data-img-uraian">
+                <img id="preview-uraian" class="soal-img hidden">
+            </div>
+
+            <div class="form-group"><label>Pertanyaan Uraian:</label><textarea id="input-q-uraian" rows="2"></textarea></div>
+            <button id="btn-simpan-uraian" class="btn btn-success" onclick="simpanSoalUraian()">+ Tambah Soal Uraian</button>
+            <button id="btn-batal-uraian" class="btn btn-danger hidden" onclick="batalEditUraian()">Batal Edit</button>
+
+            <div style="margin-top: 20px; background: #fff; padding: 10px; border-radius: 5px; border: 1px dashed #ccc;">
+                <strong>Daftar Soal Uraian:</strong>
+                <div id="list-uraian-container" style="max-height: 250px; overflow-y: auto; margin-top: 10px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="login-siswa-screen" class="hidden">
+        <h2>Data Diri Peserta Ujian</h2>
+        <div class="form-group"><label>Nama Lengkap:</label><input type="text" id="student-name" required></div>
+        <div class="form-group"><label>Kelompok:</label><input type="text" id="student-group" required></div>
+        <div class="form-group"><label>Kelas:</label><input type="text" id="student-class" required></div>
+        
+        <div style="background: #fff3cd; padding: 10px; border-radius: 5px; border: 1px solid #ffeeba; margin-top: 20px; margin-bottom: 15px;">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label style="color: #856404;">Token Akses Ujian:</label>
+                <input type="text" id="student-token" placeholder="Masukkan Token" style="text-transform: uppercase; border-color: #ffeeba;" required>
+            </div>
+        </div>
+
+        <button class="btn" onclick="mulaiUjianSiswa()">Mulai Ujian</button>
+        <p style="text-align: center; font-size: 12px; color: #d93025; margin-top: 15px; font-weight: bold;">PERINGATAN ANTI-CHEAT:<br>Dilarang keluar halaman, minimize browser, atau membuka tab lain selama ujian. Jika terdeteksi, ujian langsung dihentikan!</p>
+        <button class="btn btn-outline" onclick="showScreen('role-screen')">Kembali</button>
+    </div>
+
+    <div id="quiz-screen" class="hidden">
+        <h3 id="quiz-title-display" style="margin-bottom: 5px; color:#1a73e8;">Nama Ujian</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; color: #666; font-size: 14px;">
+            <span id="student-info-display" style="font-weight:bold;"></span>
+            <div>
+                <span id="timer-display" style="background:#d93025; color:white; padding:3px 8px; border-radius:3px; font-weight:bold; margin-right:5px;">--:--</span>
+                <span id="question-counter" style="background:#1a73e8; color:white; padding:3px 8px; border-radius:3px;">Soal -/-</span>
+            </div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="quiz-progress-bar"></div>
+        </div>
+
+        <div id="badge-jenis-soal" class="badge">Pilihan Ganda</div>
+        
+        <div id="img-container"></div>
+        
+        <h3 id="question-text" style="text-align: left; color: #333; margin-top: 5px; font-size: 18px;">Pertanyaan</h3>
+        
+        <div id="mcq-container" class="options"></div>
+        <div id="essay-container" class="hidden" style="margin-top: 15px;">
+            <textarea id="essay-answer" placeholder="Ketik jawaban uraian Anda di sini..." rows="5"></textarea>
+        </div>
+
+        <button class="btn" onclick="nextQuestion()">Selanjutnya &raquo;</button>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <div id="cheat-warning" class="warning-box">PELANGGARAN TERDETEKSI: Anda keluar dari halaman atau berpindah tab. Ujian dihentikan paksa!</div>
+        
+        <h2>Ujian Selesai!</h2>
+        <p id="result-student-info"></p>
+        <p style="font-size: 18px; margin-top:20px;">Nilai Pilihan Ganda Anda:</p>
+        <div style="font-size: 48px; font-weight: bold; color: #28a745; margin: 20px 0;" id="final-score">0</div>
+        
+        <div style="text-align: left; background: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 20px; max-height: 200px; overflow-y: auto; border: 1px solid #ddd;" id="essay-review">
+            <h4 style="margin-top:0; color:#1a73e8;">Rekap Jawaban Uraian:</h4>
+        </div>
+        <button class="btn btn-outline" onclick="location.reload()">Selesai / Keluar</button>
+    </div>
+
+</div>
+
+<script>
+    // ==========================================
+    // DATABASE UTAMA
+    // ==========================================
+    let dbUjian = JSON.parse(localStorage.getItem('dbUjianRobotika')) || [];
+    
+    // State Navigasi Guru
+    let activeFolderIndex = -1;
+    let editIndexPG = -1;
+    let editIndexUraian = -1;
+
+    // State Sesi Siswa
+    let isQuizActive = false;
+    let studentData = {};
+    let soalPG_Siswa = []; 
+    let soalUraian_Siswa = [];
+    let currentIndex = 0;
+    let score = 0;
+    let essayAnswersText = []; 
+    let essayAnswersHTML = []; 
+    let timerInterval;
+
+    function showScreen(screenId) {
+        document.querySelectorAll('#main-container > div').forEach(div => div.classList.add('hidden'));
+        document.getElementById(screenId).classList.remove('hidden');
+    }
+
+    // ==========================================
+    // SISTEM PENGOLAHAN GAMBAR (CANVAS COMPRESSION)
+    // ==========================================
+    function prosesGambar(input, previewId, dataId) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                // Max dimension 800px untuk menghemat localStorage
+                const maxSize = 800; 
+                if (width > height) {
+                    if (width > maxSize) { height *= maxSize / width; width = maxSize; }
+                } else {
+                    if (height > maxSize) { width *= maxSize / height; height = maxSize; }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Kompresi ke JPEG dengan kualitas 70%
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                
+                document.getElementById(dataId).value = dataUrl;
+                document.getElementById(previewId).src = dataUrl;
+                document.getElementById(previewId).classList.remove('hidden');
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // ==========================================
+    // SISTEM KEAMANAN (ANTI-CHEAT)
+    // ==========================================
+    function checkCheat() {
+        if (!isQuizActive) return; 
+
+        if (document.visibilityState === "hidden") {
+            document.getElementById('cheat-warning').style.display = 'block';
+            
+            if(currentIndex >= soalPG_Siswa.length && currentIndex < (soalPG_Siswa.length + soalUraian_Siswa.length)) {
+                recordEssay(); 
+            }
+            
+            tampilkanHasil(true); 
+            setTimeout(() => { alert("PELANGGARAN: Anda terdeteksi berpindah aplikasi atau tab. Ujian langsung dihentikan dan jawaban dikunci!"); }, 500);
+        }
+    }
+    document.addEventListener("visibilitychange", checkCheat);
+
+    // ==========================================
+    // BAGIAN GURU (MANAJEMEN FOLDER & SOAL)
+    // ==========================================
+    function loginGuru() {
+        const pin = document.getElementById('guru-pin').value;
+        if(pin === "1234") { 
+            renderListFolder(); showScreen('folder-guru-screen'); document.getElementById('guru-pin').value = '';
+        } else alert("PIN Salah!");
+    }
+
+    function simpanDatabase() { localStorage.setItem('dbUjianRobotika', JSON.stringify(dbUjian)); }
+
+    function resetSemuaFolder() {
+        if(confirm("PERINGATAN! Yakin ingin menghapus SEMUA folder, soal, dan rekaman nilai dari sistem?")) {
+            dbUjian = []; simpanDatabase(); renderListFolder();
+        }
+    }
+
+    function buatFolderBaru() {
+        const nama = document.getElementById('input-folder-nama').value;
+        const token = document.getElementById('input-folder-token').value.toUpperCase();
+        const durasi = parseInt(document.getElementById('input-folder-durasi').value);
+        const status = document.getElementById('input-folder-status').value;
+
+        if(!nama || !token || !durasi) return alert("Isi Nama Ujian, Token, dan Durasi!");
+        if(dbUjian.some(folder => folder.token === token)) return alert("Token sudah dipakai!");
+
+        dbUjian.push({ id: Date.now().toString(), namaFolder: nama, token: token, durasi: durasi, status: status, soalPG: [], soalUraian: [], results: [] });
+        simpanDatabase();
+        document.getElementById('input-folder-nama').value = '';
+        document.getElementById('input-folder-token').value = '';
+        renderListFolder();
+    }
+
+    function renderListFolder() {
+        const container = document.getElementById('list-folder-container');
+        container.innerHTML = '';
+        if(dbUjian.length === 0) return container.innerHTML = '<i style="color:#999;">Belum ada folder ujian.</i>';
+        
+        dbUjian.forEach((folder, index) => {
+            folder.results = folder.results || []; folder.durasi = folder.durasi || 60; folder.status = folder.status || 'aktif';
+            const statusClass = folder.status === 'aktif' ? 'aktif' : 'tutup';
+            const statusText = folder.status === 'aktif' ? 'AKTIF' : 'DITUTUP';
+
+            container.innerHTML += `
+                <div class="folder-card" style="flex-direction: column; align-items: stretch;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <strong style="font-size:16px;">${folder.namaFolder}</strong><span class="badge badge-status ${statusClass}" style="margin-left: 5px;">${statusText}</span><br>
+                            <span style="font-size:13px; color:#666;">Token: <strong style="color:#d93025;">${folder.token}</strong> | Durasi: ${folder.durasi} Menit<br>Bank Soal: ${folder.soalPG.length} PG, ${folder.soalUraian.length} Uraian<br>Data Masuk: <strong style="color:#1a73e8;">${folder.results.length} Siswa</strong></span>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-end;">
+                            <button class="btn btn-sm btn-outline" style="margin:0;" onclick="ubahStatusFolder(${index})">Ubah Status</button>
+                            <button class="btn btn-sm" style="background:#28a745; margin:0;" onclick="bukaFolder(${index})">Edit Soal</button>
+                            <button class="btn btn-sm btn-danger" style="margin:0;" onclick="hapusFolder(${index})">Hapus</button>
+                        </div>
+                    </div>
+                    <button class="btn btn-sm" style="margin-top: 10px; background: #6c757d; width:100%;" onclick="downloadCSV(${index})">📥 Download Rekap Nilai (.CSV)</button>
+                </div>
+            `;
+        });
+    }
+
+    function ubahStatusFolder(index) { dbUjian[index].status = (dbUjian[index].status === 'aktif') ? 'tutup' : 'aktif'; simpanDatabase(); renderListFolder(); }
+    function hapusFolder(index) { if(confirm(`Hapus folder "${dbUjian[index].namaFolder}"?`)) { dbUjian.splice(index, 1); simpanDatabase(); renderListFolder(); } }
+
+    function downloadCSV(index) {
+        const folder = dbUjian[index];
+        if(!folder.results || folder.results.length === 0) return alert("Belum ada data nilai dari siswa di ujian ini.");
+
+        let csvContent = "Waktu,Nama Siswa,Kelompok,Kelas,Nilai PG";
+        let maxEssay = 0;
+        folder.results.forEach(r => { if(r.essayAnswers && r.essayAnswers.length > maxEssay) maxEssay = r.essayAnswers.length; });
+        for(let i = 1; i <= maxEssay; i++) csvContent += `,Uraian ${i}`;
+        csvContent += "\n";
+
+        folder.results.forEach(r => {
+            const esc = (text) => `"${String(text).replace(/"/g, '""')}"`; 
+            let row = [esc(new Date().toLocaleString('id-ID')), esc(r.name), esc(r.group), esc(r.sClass), r.score];
+            if(r.essayAnswers) r.essayAnswers.forEach(ans => row.push(esc(ans)));
+            csvContent += row.join(",") + "\n";
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url); link.setAttribute("download", `Rekap_${folder.namaFolder.replace(/\s+/g, '_')}.csv`);
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    }
+
+    function bukaFolder(index) {
+        activeFolderIndex = index;
+        document.getElementById('judul-folder-aktif').innerText = dbUjian[index].namaFolder;
+        document.getElementById('token-folder-aktif').innerText = dbUjian[index].token;
+        batalEditPG(); batalEditUraian(); updateEditorUI(); showScreen('editor-soal-screen');
+    }
+
+    function kembaliKeFolder() { activeFolderIndex = -1; renderListFolder(); showScreen('folder-guru-screen'); }
+    
+    function updateEditorUI() {
+        const folder = dbUjian[activeFolderIndex];
+        document.getElementById('count-pg').innerText = folder.soalPG.length; document.getElementById('count-uraian').innerText = folder.soalUraian.length;
+        renderListPG(); renderListUraian();
+    }
+
+    function simpanSoalPG() {
+        const img = document.getElementById('data-img-pg').value; 
+        const q = document.getElementById('input-q-pg').value;
+        const opts = [document.getElementById('input-opt-0').value, document.getElementById('input-opt-1').value, document.getElementById('input-opt-2').value, document.getElementById('input-opt-3').value];
+        const ans = parseInt(document.getElementById('input-ans-pg').value);
+        
+        if(!q || !opts[0] || !opts[1] || !opts[2] || !opts[3]) return alert("Isi pertanyaan dan semua opsi!");
+        
+        const dataSoal = { img: img, q: q, options: opts, answer: ans };
+        if (editIndexPG > -1) dbUjian[activeFolderIndex].soalPG[editIndexPG] = dataSoal; else dbUjian[activeFolderIndex].soalPG.push(dataSoal);
+        
+        simpanDatabase(); batalEditPG(); updateEditorUI();
+    }
+
+    function renderListPG() {
+        const container = document.getElementById('list-pg-container'); const folder = dbUjian[activeFolderIndex]; container.innerHTML = '';
+        if(folder.soalPG.length === 0) return container.innerHTML = '<i style="color:#999;">Belum ada soal PG.</i>';
+        
+        folder.soalPG.forEach((soal, i) => {
+            const abcd = ['A', 'B', 'C', 'D']; 
+            const imgLabel = soal.img ? `<span style="color:#1a73e8; font-size:12px;">[🖼️ Gambar Tersimpan]</span> ` : '';
+            container.innerHTML += `<div class="list-item"><strong>${i+1}. ${imgLabel}${soal.q}</strong><br><span style="color:#555;">A. ${soal.options[0]} | B. ${soal.options[1]}<br>C. ${soal.options[2]} | D. ${soal.options[3]}</span><br><span style="color:#28a745; font-weight:bold;">Kunci: ${abcd[soal.answer]}</span><div class="action-buttons"><button class="btn btn-warning btn-sm" onclick="tarikEditPG(${i})">Edit</button><button class="btn btn-danger btn-sm" onclick="hapusPG(${i})">Hapus</button></div></div>`;
+        });
+    }
+
+    function tarikEditPG(index) {
+        editIndexPG = index; const soal = dbUjian[activeFolderIndex].soalPG[index];
+        
+        document.getElementById('data-img-pg').value = soal.img || ''; 
+        if(soal.img) {
+            document.getElementById('preview-pg').src = soal.img;
+            document.getElementById('preview-pg').classList.remove('hidden');
+        } else {
+            document.getElementById('preview-pg').classList.add('hidden');
+        }
+        
+        document.getElementById('input-q-pg').value = soal.q; document.getElementById('input-opt-0').value = soal.options[0]; document.getElementById('input-opt-1').value = soal.options[1]; document.getElementById('input-opt-2').value = soal.options[2]; document.getElementById('input-opt-3').value = soal.options[3]; document.getElementById('input-ans-pg').value = soal.answer;
+        document.getElementById('btn-simpan-pg').innerText = "✓ Simpan Perubahan PG"; document.getElementById('btn-simpan-pg').className = "btn btn-outline"; document.getElementById('btn-batal-pg').classList.remove('hidden'); document.getElementById('input-q-pg').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function hapusPG(index) { if(confirm("Hapus soal ini?")) { dbUjian[activeFolderIndex].soalPG.splice(index, 1); simpanDatabase(); if(editIndexPG === index) batalEditPG(); updateEditorUI(); } }
+
+    function batalEditPG() {
+        editIndexPG = -1; 
+        document.getElementById('input-file-pg').value = ''; 
+        document.getElementById('data-img-pg').value = ''; 
+        document.getElementById('preview-pg').classList.add('hidden');
+        
+        document.getElementById('input-q-pg').value = ''; document.getElementById('input-opt-0').value = ''; document.getElementById('input-opt-1').value = ''; document.getElementById('input-opt-2').value = ''; document.getElementById('input-opt-3').value = ''; document.getElementById('input-ans-pg').value = '0';
+        document.getElementById('btn-simpan-pg').innerText = "+ Tambah Soal PG"; document.getElementById('btn-simpan-pg').className = "btn btn-success"; document.getElementById('btn-batal-pg').classList.add('hidden');
+    }
+
+    function simpanSoalUraian() {
+        const img = document.getElementById('data-img-uraian').value; 
+        const q = document.getElementById('input-q-uraian').value;
+        if(!q) return alert("Pertanyaan kosong!");
+        
+        const dataSoal = { img: img, q: q };
+        if (editIndexUraian > -1) dbUjian[activeFolderIndex].soalUraian[editIndexUraian] = dataSoal; else dbUjian[activeFolderIndex].soalUraian.push(dataSoal);
+        
+        simpanDatabase(); batalEditUraian(); updateEditorUI();
+    }
+
+    function renderListUraian() {
+        const container = document.getElementById('list-uraian-container'); const folder = dbUjian[activeFolderIndex]; container.innerHTML = '';
+        if(folder.soalUraian.length === 0) return container.innerHTML = '<i style="color:#999;">Belum ada soal uraian.</i>';
+        
+        folder.soalUraian.forEach((soal, i) => {
+            const imgLabel = soal.img ? `<span style="color:#1a73e8; font-size:12px;">[🖼️ Gambar Tersimpan]</span> ` : '';
+            container.innerHTML += `<div class="list-item"><strong>${i+1}. ${imgLabel}${soal.q}</strong><div class="action-buttons"><button class="btn btn-warning btn-sm" onclick="tarikEditUraian(${i})">Edit</button><button class="btn btn-danger btn-sm" onclick="hapusUraian(${i})">Hapus</button></div></div>`;
+        });
+    }
+
+    function tarikEditUraian(index) {
+        editIndexUraian = index; const soal = dbUjian[activeFolderIndex].soalUraian[index];
+        
+        document.getElementById('data-img-uraian').value = soal.img || ''; 
+        if(soal.img) {
+            document.getElementById('preview-uraian').src = soal.img;
+            document.getElementById('preview-uraian').classList.remove('hidden');
+        } else {
+            document.getElementById('preview-uraian').classList.add('hidden');
+        }
+
+        document.getElementById('input-q-uraian').value = soal.q;
+        document.getElementById('btn-simpan-uraian').innerText = "✓ Simpan Perubahan Uraian"; document.getElementById('btn-simpan-uraian').className = "btn btn-outline"; document.getElementById('btn-batal-uraian').classList.remove('hidden');
+    }
+
+    function hapusUraian(index) { if(confirm("Hapus soal ini?")) { dbUjian[activeFolderIndex].soalUraian.splice(index, 1); simpanDatabase(); if(editIndexUraian === index) batalEditUraian(); updateEditorUI(); } }
+
+    function batalEditUraian() {
+        editIndexUraian = -1; 
+        document.getElementById('input-file-uraian').value = ''; 
+        document.getElementById('data-img-uraian').value = ''; 
+        document.getElementById('preview-uraian').classList.add('hidden');
+        
+        document.getElementById('input-q-uraian').value = '';
+        document.getElementById('btn-simpan-uraian').innerText = "+ Tambah Soal Uraian"; document.getElementById('btn-simpan-uraian').className = "btn btn-success"; document.getElementById('btn-batal-uraian').classList.add('hidden');
+    }
+
+    // ==========================================
+    // BAGIAN SISWA (UJIAN)
+    // ==========================================
+    
+    function mulaiUjianSiswa() {
+        const name = document.getElementById('student-name').value;
+        const group = document.getElementById('student-group').value;
+        const sClass = document.getElementById('student-class').value;
+        const tokenInput = document.getElementById('student-token').value.toUpperCase();
+
+        if(!name || !group || !sClass || !tokenInput) return alert("Isi semua data diri dan Token!");
+        
+        const folderUjian = dbUjian.find(f => f.token === tokenInput);
+        if(!folderUjian) return alert("Token tidak ditemukan!");
+        if(folderUjian.status === 'tutup') return alert("Ujian ini sedang ditutup/dikunci oleh Guru.");
+        if(folderUjian.soalPG.length === 0 && folderUjian.soalUraian.length === 0) return alert("Belum ada soal!");
+
+        isQuizActive = true; 
+
+        studentData = { name, group, sClass, namaUjian: folderUjian.namaFolder, token: tokenInput };
+        currentIndex = 0; score = 0; essayAnswersText = []; essayAnswersHTML = [];
+        
+        soalPG_Siswa = [...folderUjian.soalPG];
+        soalUraian_Siswa = [...folderUjian.soalUraian];
+        for (let i = soalPG_Siswa.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [soalPG_Siswa[i], soalPG_Siswa[j]] = [soalPG_Siswa[j], soalPG_Siswa[i]];
+        }
+
+        document.getElementById('quiz-title-display').innerText = studentData.namaUjian;
+        document.getElementById('student-info-display').innerText = `${name} | ${sClass}`;
+        
+        showScreen('quiz-screen');
+        jalankanTimer(folderUjian.durasi);
+        renderQuestion();
+    }
+
+    function jalankanTimer(durasiMenit) {
+        let timeLeft = durasiMenit * 60;
+        document.getElementById('timer-display').innerText = `${durasiMenit}:00`;
+        
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                alert("Waktu Habis! Jawaban otomatis dikumpulkan.");
+                if(currentIndex >= soalPG_Siswa.length && currentIndex < (soalPG_Siswa.length + soalUraian_Siswa.length)) recordEssay(); 
+                tampilkanHasil();
+            } else {
+                let m = Math.floor(timeLeft / 60); let s = timeLeft % 60;
+                document.getElementById('timer-display').innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+            }
+        }, 1000);
+    }
+
+    function renderQuestion() {
+        const totalQ = soalPG_Siswa.length + soalUraian_Siswa.length;
+        document.getElementById('question-counter').innerText = `Soal ${currentIndex + 1}/${totalQ}`;
+        
+        const progressPercent = (currentIndex / totalQ) * 100;
+        document.getElementById('quiz-progress-bar').style.width = progressPercent + "%";
+        
+        const mcqCont = document.getElementById('mcq-container'); const essayCont = document.getElementById('essay-container'); const imgCont = document.getElementById('img-container');
+        mcqCont.innerHTML = ''; document.getElementById('essay-answer').value = ''; imgCont.innerHTML = ''; 
+
+        let currentQ;
+        if (currentIndex < soalPG_Siswa.length) {
+            currentQ = soalPG_Siswa[currentIndex];
+            document.getElementById('badge-jenis-soal').innerText = "Pilihan Ganda"; document.getElementById('badge-jenis-soal').style.background = "#28a745";
+            mcqCont.classList.remove('hidden'); essayCont.classList.add('hidden');
+            document.getElementById('question-text').innerText = `${currentIndex + 1}. ${currentQ.q}`;
+            currentQ.options.forEach((opt, index) => {
+                const label = document.createElement('label'); label.className = 'option-label';
+                label.innerHTML = `<input type="radio" name="mcq-option" value="${index}"> <span>${opt}</span>`;
+                mcqCont.appendChild(label);
+            });
+        } else {
+            const essayIndex = currentIndex - soalPG_Siswa.length; currentQ = soalUraian_Siswa[essayIndex];
+            document.getElementById('badge-jenis-soal').innerText = "Uraian / Essay"; document.getElementById('badge-jenis-soal').style.background = "#fbbc05";
+            mcqCont.classList.add('hidden'); essayCont.classList.remove('hidden');
+            document.getElementById('question-text').innerText = `Uraian ${essayIndex + 1}. ${currentQ.q}`;
+        }
+        
+        if(currentQ.img) imgCont.innerHTML = `<img src="${currentQ.img}" class="soal-img" onerror="this.style.display='none';">`;
+    }
+
+    function recordEssay() {
+        const text = document.getElementById('essay-answer').value; const idx = currentIndex - soalPG_Siswa.length;
+        essayAnswersText.push(text || 'TIDAK DIJAWAB'); essayAnswersHTML.push(`<strong>No ${idx + 1}:</strong> ${text || '<i style="color:red;">(Kosong)</i>'}`);
+    }
+
+    function nextQuestion() {
+        if (currentIndex < soalPG_Siswa.length) {
+            const selected = document.querySelector('input[name="mcq-option"]:checked');
+            if (selected && parseInt(selected.value) === soalPG_Siswa[currentIndex].answer) { score++; }
+        } else recordEssay();
+
+        currentIndex++; const totalQ = soalPG_Siswa.length + soalUraian_Siswa.length;
+        if (currentIndex >= totalQ) tampilkanHasil(); else renderQuestion();
+    }
+
+    function tampilkanHasil(isForced = false) {
+        isQuizActive = false; 
+        clearInterval(timerInterval);
+        document.getElementById('quiz-progress-bar').style.width = "100%"; 
+
+        let finalScore = 0;
+        if(soalPG_Siswa.length > 0) finalScore = Math.round((score / soalPG_Siswa.length) * 100);
+
+        const fIndex = dbUjian.findIndex(f => f.token === studentData.token);
+        if(fIndex > -1) {
+            dbUjian[fIndex].results.push({
+                name: studentData.name,
+                group: studentData.group,
+                sClass: studentData.sClass,
+                score: finalScore,
+                essayAnswers: essayAnswersText
+            });
+            simpanDatabase(); 
+        }
+
+        showScreen('result-screen');
+        document.getElementById('result-student-info').innerHTML = `
+            <strong>${studentData.name}</strong><br>
+            Ujian: <strong style="color:#1a73e8;">${studentData.namaUjian}</strong><br>
+            Kelompok: ${studentData.group} | Kelas: ${studentData.sClass}
+        `;
+        document.getElementById('final-score').innerText = finalScore;
+
+        const revDiv = document.getElementById('essay-review');
+        revDiv.innerHTML = '<h4 style="margin-top:0; color:#1a73e8;">Rekap Jawaban Uraian:</h4>';
+        if(essayAnswersHTML.length === 0) revDiv.innerHTML += "<p>Tidak ada soal uraian.</p>";
+        essayAnswersHTML.forEach(ans => revDiv.innerHTML += `<p style="margin:10px 0; border-bottom:1px solid #ccc; padding-bottom:5px;">${ans}</p>`);
+    }
+</script>
+
+</body>
+</html>
